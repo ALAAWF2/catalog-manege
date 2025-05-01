@@ -5,6 +5,9 @@
   <title>جدول البضاعة</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+
   <style>
     body { font-family: Arial; background: #fff8f0; padding: 20px; }
     h1 { text-align: center; color: #e67e22; }
@@ -24,6 +27,10 @@
   <h1>جدول البضاعة</h1>
 <p id="lastUpdated" style="text-align:center; color: #999;">آخر تحديث: 2025-05-01</p>
   <div class="filters">
+  <button onclick="exportToExcel()">تصدير إلى Excel</button>
+  <button onclick="exportWithImages()">تصدير مع الصور</button>
+
+
     <label>اختر المستودع:
       <select id="warehouseFilter"></select>
     </label>
@@ -154,7 +161,7 @@
           <p><strong>الكود:</strong> ${d.code}</p>
           <p><strong>Alias:</strong> ${d.alias ?? '—'}</p>
           <p>الكمية المباعة: ${d.sales !== undefined ? d.sales : '—'}</p>
-
+        <p><strong>الكمية المتوفرة:</strong> ${d.stock ?? '—'}</p>
          <!input type="number" min="1" placeholder="الكمية المطلوبة" value="${cart[d.code]?.qty ?? ''}" onchange="addToCart('${d.code}', '${d.name}', this.value)">
         </div>
       `).join('');
@@ -194,6 +201,108 @@ function updateTotalSales() {
 
   document.getElementById("totalSales").textContent = `${label}: ${total.toLocaleString()} من ${count} منتج`;
 }
+
+async function exportWithImages() {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("المنتجات");
+
+  const columnIndexForImage = 7; // العمود G (0-based: index 6)
+  
+  // ثوابت الأبعاد المطلوبة
+  const imageWidthInInches = 3.37;
+  const imageHeightInInches = 2.38;
+  const pxPerInch = 96;
+  const imageWidthPx = Math.round(imageWidthInInches * pxPerInch); // 323px
+  const imageHeightPx = Math.round(imageHeightInInches * pxPerInch); // 229px
+
+  // تحويل الأبعاد من px إلى وحدات Excel
+  const excelColWidth = imageWidthPx / 7.5; // تقريبي
+  const excelRowHeight = imageHeightPx * 0.75;
+
+  // تعريف الأعمدة
+  worksheet.columns = [
+    { header: "الاسم", key: "name", width: 30 },
+    { header: "الكود", key: "code", width: 15 },
+    { header: "Alias", key: "alias", width: 15 },
+    { header: "السعر", key: "price", width: 10 },
+    { header: "المتوفر", key: "stock", width: 12 },
+    { header: "الكمية المباعة", key: "sales", width: 15 },
+    { header: "الصورة", key: "image", width: excelColWidth }
+  ];
+
+  for (let i = 0; i < filteredProducts.length; i++) {
+    const p = filteredProducts[i];
+
+    // إضافة صف جديد
+    const row = worksheet.addRow({
+      name: p.name,
+      code: p.code,
+      alias: p.alias ?? '',
+      price: p.price,
+      stock: p.stock,
+      sales: p.sales ?? ''
+    });
+
+    // ضبط ارتفاع الصف
+    const rowRef = worksheet.getRow(row.number);
+    rowRef.height = excelRowHeight;
+    rowRef.customHeight = true;
+
+    const formats = ['jpg', 'jpeg', 'JPG', 'JPEG', 'png'];
+    let imageAdded = false;
+
+    for (const ext of formats) {
+      const url = `images/${p.code}.${ext}`;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+
+        const blob = await res.blob();
+        const buffer = await blob.arrayBuffer();
+        const imageId = workbook.addImage({
+          buffer: buffer,
+          extension: ext.toLowerCase()
+        });
+
+        worksheet.addImage(imageId, {
+          tl: { col: columnIndexForImage - 1, row: row.number - 1 },
+          ext: { width: imageWidthPx, height: imageHeightPx }
+        });
+
+        imageAdded = true;
+        break;
+      } catch (e) {
+        continue;
+      }
+    }
+
+    if (!imageAdded) {
+      console.warn(`⚠️ لم يتم العثور على صورة للكود ${p.code}`);
+    }
+  }
+
+  // حفظ الملف
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `تصدير_المنتجات_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+
+
+
+
+
+
+
+
+
 
 
     function renderPagination() {
