@@ -7,39 +7,168 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: Arial; background: #fff8f0; padding: 20px; }
-    h1 { text-align: center; color: #e67e22; }
+    body { font-family: 'Cairo', Arial, sans-serif; background: linear-gradient(135deg, #fff8f0 60%, #ffe5c2 100%); padding: 20px; }
+    h1 { text-align: center; color: #e67e22; letter-spacing: 1px; font-family: 'Cairo', Arial, sans-serif; }
     select, button, input[type='number'], input[type='text'] {
       margin: 5px; padding: 8px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc;
     }
-    .filters { text-align: center; margin-bottom: 20px; }
-    .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-    .product { background: white; padding: 15px; border-radius: 10px; border: 1px solid #f0c79b; box-shadow: 0 2px 5px rgba(230, 126, 34, 0.1); text-align: center; }
-    .product img { width: 100%; height: 150px; object-fit: contain; margin-bottom: 10px; border-radius: 8px; background-color: #fff0e0; }
-    .pagination { text-align: center; margin-top: 20px; }
-    .pagination button, .pagination select { margin: 5px; padding: 8px 16px; background: #e67e22; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    .pagination button:disabled { background: #ccc; cursor: not-allowed; }
+    .filters {
+      background: #fff7ed;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #e67e2240;
+      padding: 18px 10px;
+      margin-bottom: 25px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .filters label, .filters select, .filters input {
+      margin: 0 5px;
+    }
+    .filters select, .filters input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      min-width: 120px;
+      font-size: 15px;
+      background: #fff;
+      transition: border 0.2s;
+    }
+    .filters select:focus, .filters input:focus {
+      border: 1.5px solid #e67e22;
+      outline: none;
+    }
+    .filters button {
+      background: #e67e22;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s, box-shadow 0.2s;
+      margin: 5px;
+      font-size: 15px;
+      box-shadow: 0 2px 6px #e67e2220;
+    }
+    .filters button:hover {
+      background: #d35400;
+      box-shadow: 0 4px 12px #e67e2240;
+    }
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 22px;
+    }
+    .product {
+      background: white;
+      padding: 22px 15px 18px 15px;
+      border-radius: 14px;
+      border: 1px solid #f0c79b;
+      box-shadow: 0 2px 8px #e67e2215;
+      text-align: center;
+      transition: transform 0.18s, box-shadow 0.18s;
+      position: relative;
+      overflow: hidden;
+    }
+    .product:hover {
+      transform: translateY(-7px) scale(1.025);
+      box-shadow: 0 8px 24px #e67e2240;
+      border-color: #e67e22;
+    }
+    .product img {
+      width: 100%;
+      height: 180px;
+      object-fit: contain;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      background-color: #fff0e0;
+      box-shadow: 0 1px 6px #e67e2210;
+      transition: box-shadow 0.2s;
+    }
+    .product h4 {
+      color: #e67e22;
+      margin: 10px 0 6px 0;
+      font-size: 20px;
+      font-family: 'Cairo', Arial, sans-serif;
+    }
+    .product p {
+      margin: 5px 0;
+      color: #666;
+      font-size: 15px;
+    }
+    .pagination {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .pagination button, .pagination select {
+      margin: 5px;
+      padding: 10px 20px;
+      background: #e67e22;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-size: 15px;
+    }
+    .pagination button:hover {
+      background: #d35400;
+    }
+    .pagination button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .sort-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+    .sort-buttons button { background: #e67e22; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: background 0.3s; }
+    .sort-buttons button:hover { background: #d35400; }
+    @media (max-width: 700px) {
+      .filters { flex-direction: column; gap: 8px; padding: 10px 2px; }
+      .products { grid-template-columns: 1fr; }
+      .product img { height: 120px; }
+    }
   </style>
 </head>
 <body>
   <h1>جدول البضاعة</h1>
 <p id="lastUpdated" style="text-align:center; color: #999;">آخر تحديث: 2025-05-01</p>
   <div class="filters">
-  <button onclick="exportToExcel()">تصدير إلى Excel</button>
-  <button onclick="exportWithImages()">تصدير مع الصور</button>
-
-
+    <button onclick="exportToExcel()">تصدير إلى Excel</button>
+    <button onclick="exportWithImages()">تصدير مع الصور</button>
+    <label style="margin-right:10px; font-weight:bold;">الترتيب:
+      <select id="sortSelect" onchange="handleSortChange()" style="min-width:180px; padding:10px; border-radius:5px; border:1px solid #ddd;">
+        <option value="default">الترتيب الافتراضي</option>
+        <option value="priceLow">السعر: من الأقل للأعلى</option>
+        <option value="priceHigh">السعر: من الأعلى للأقل</option>
+        <option value="sales">الأكثر مبيعًا</option>
+        <option value="stock">الأعلى مخزونًا</option>
+      </select>
+    </label>
     <label>اختر المستودع:
       <select id="warehouseFilter"></select>
     </label>
     <label>اختر التصنيف:
       <select id="categoryFilter"></select>
     </label>
+    <label style="font-weight:bold;">السعر:
+      <select id="priceRangeFilter" onchange="filterByPriceRange()" style="min-width:140px; padding:10px; border-radius:5px; border:1px solid #ddd;">
+        <option value="all">الكل</option>
+        <option value="1-199">001 - 199 ريال</option>
+        <option value="200-299">200 - 299 ريال</option>
+        <option value="300-399">300 - 399 ريال</option>
+        <option value="400-499">400 - 499 ريال</option>
+        <option value="500+">500 ريال فأكثر</option>
+      </select>
+    </label>
     <input type="text" id="searchInput" placeholder="ابحث بالـ Alias..." oninput="renderProducts()" />
-    <button onclick="sortBySales()">ترتيب حسب الأكثر مبيعًا</button>
-   <button onclick="openOrderModal()" style="display:none;">ارسال الطلبية</button>
+    <button onclick="openOrderModal()" style="display:none;">ارسال الطلبية</button>
   </div>
 
   <div class="products" id="productContainer"></div>
@@ -85,6 +214,7 @@
     let currentPage = 1;
     const productsPerPage = 40;
     const cart = {};
+    let selectedPriceRange = 'all';
 
     const mallMap = {
   "Warehouse": [
@@ -132,7 +262,8 @@
         d.stock > 20 &&
         (!outlet || d.outlet === outlet) &&
         (!category || d.category === category) &&
-        (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm)))
+        (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm))) &&
+        priceInSelectedRange(d.price || 0)
       );
 
       renderPage(1);
@@ -160,8 +291,10 @@
           <p>السعر: ${d.price} ريال</p>
           <p><strong>الكود:</strong> ${d.code}</p>
           <p><strong>Alias:</strong> ${d.alias ?? '—'}</p>
-          <p>الكمية المباعة: ${d.sales !== undefined ? d.sales : '—'}</p>
-        <p><strong>الكمية المتوفرة:</strong> ${d.stock ?? '—'}</p>
+          <p><strong>الكمية المباعة:</strong> ${d.sales !== undefined ? d.sales : '—'}</p>
+<p><strong>قيمة المبيعات:</strong> ${d.sales && d.price ? (d.sales * d.price).toLocaleString() + ' ريال' : '—'}</p>
+<p><strong>الكمية المتوفرة:</strong> ${d.stock ?? '—'}</p>
+
          <!input type="number" min="1" placeholder="الكمية المطلوبة" value="${cart[d.code]?.qty ?? ''}" onchange="addToCart('${d.code}', '${d.name}', this.value)">
         </div>
       `).join('');
@@ -191,16 +324,23 @@
 
 
 function updateTotalSales() {
-  const total = filteredProducts.reduce((sum, p) => sum + (p.sales || 0), 0);
+  const totalSalesQty = filteredProducts.reduce((sum, p) => sum + (p.sales || 0), 0);
+  const totalSalesValue = filteredProducts.reduce((sum, p) => sum + ((p.sales || 0) * (p.price || 0)), 0);
   const count = filteredProducts.length;
   const category = categoryFilter.value;
 
   const label = category
-    ? `إجمالي الكميات المباعة لتصنيف "${category}"`
-    : "إجمالي الكميات المباعة للمنتجات المعروضة";
+    ? `إجمالي تصنيف "${category}"`
+    : "إجمالي المنتجات المعروضة";
 
-  document.getElementById("totalSales").textContent = `${label}: ${total.toLocaleString()} من ${count} منتج`;
+  document.getElementById("totalSales").innerHTML = `
+    ${label}:<br>
+    🔢 عدد المنتجات: ${count}<br>
+    📦 الكمية المباعة: ${totalSalesQty.toLocaleString()} قطعة<br>
+    💰 قيمة المبيعات: ${totalSalesValue.toLocaleString()} ريال
+  `;
 }
+
 
 async function exportWithImages() {
   const workbook = new ExcelJS.Workbook();
@@ -379,6 +519,39 @@ async function exportWithImages() {
       });
     }
 
+    function handleSortChange() {
+      const sortValue = document.getElementById('sortSelect').value;
+      if (sortValue === 'priceLow') sortByPriceLowToHigh();
+      else if (sortValue === 'priceHigh') sortByPriceHighToLow();
+      else if (sortValue === 'sales') sortBySales();
+      else if (sortValue === 'stock') sortByStock();
+      else renderProducts();
+    }
+
+    function sortByStock() {
+      const outlet = warehouseFilter.value;
+      const category = categoryFilter.value;
+      const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+
+      if (!outlet) {
+        productContainer.innerHTML = "<h3 style='text-align:center;'>يرجى اختيار مستودع لعرض المنتجات</h3>";
+        pagination.innerHTML = '';
+        return;
+      }
+
+      filteredProducts = data.filter(d =>
+        d.stock > 20 &&
+        (!outlet || d.outlet === outlet) &&
+        (!category || d.category === category) &&
+        (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm))) &&
+        priceInSelectedRange(d.price || 0)
+      );
+
+      filteredProducts.sort((a, b) => (b.stock || 0) - (a.stock || 0));
+      renderPage(1);
+      updateTotalSales();
+    }
+
     function sortBySales() {
       const outlet = warehouseFilter.value;
       const category = categoryFilter.value;
@@ -394,13 +567,76 @@ async function exportWithImages() {
         d.stock > 20 &&
         (!outlet || d.outlet === outlet) &&
         (!category || d.category === category) &&
-        (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm)))
+        (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm))) &&
+        priceInSelectedRange(d.price || 0)
       );
 
       filteredProducts.sort((a, b) => (b.sales || 0) - (a.sales || 0));
       renderPage(1);
-	  updateTotalSales();
+      updateTotalSales();
+    }
 
+    function sortByPriceHighToLow() {
+      const outlet = warehouseFilter.value;
+      const category = categoryFilter.value;
+      const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+
+      if (!outlet) {
+        productContainer.innerHTML = "<h3 style='text-align:center;'>يرجى اختيار مستودع لعرض المنتجات</h3>";
+        pagination.innerHTML = '';
+        return;
+      }
+
+      filteredProducts = data.filter(d =>
+        d.stock > 20 &&
+        (!outlet || d.outlet === outlet) &&
+        (!category || d.category === category) &&
+        (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm))) &&
+        priceInSelectedRange(d.price || 0)
+      );
+
+      filteredProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
+      renderPage(1);
+      updateTotalSales();
+    }
+
+    function sortByPriceLowToHigh() {
+      const outlet = warehouseFilter.value;
+      const category = categoryFilter.value;
+      const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+
+      if (!outlet) {
+        productContainer.innerHTML = "<h3 style='text-align:center;'>يرجى اختيار مستودع لعرض المنتجات</h3>";
+        pagination.innerHTML = '';
+        return;
+      }
+
+      filteredProducts = data.filter(d =>
+        d.stock > 20 &&
+        (!outlet || d.outlet === outlet) &&
+        (!category || d.category === category) &&
+        (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm))) &&
+        priceInSelectedRange(d.price || 0)
+      );
+
+      filteredProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
+      renderPage(1);
+      updateTotalSales();
+    }
+
+    function filterByPriceRange() {
+      selectedPriceRange = document.getElementById('priceRangeFilter').value;
+      renderProducts();
+    }
+
+    function priceInSelectedRange(price) {
+      if (selectedPriceRange === 'all') return true;
+      if (selectedPriceRange === '1-199') return price >= 1 && price <= 199;
+      if (selectedPriceRange === '200-299') return price >= 200 && price <= 299;
+      if (selectedPriceRange === '300-399') return price >= 300 && price <= 399;
+      if (selectedPriceRange === '400-499') return price >= 400 && price <= 499;
+      if (selectedPriceRange === '500+') return price >= 500;
+      return true;
     }
 
     warehouseFilter.addEventListener('change', renderProducts);
