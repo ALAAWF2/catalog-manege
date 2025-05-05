@@ -149,6 +149,7 @@
         <option value="priceHigh">السعر: من الأعلى للأقل</option>
         <option value="sales">الأكثر مبيعًا</option>
         <option value="stock">الأعلى مخزونًا</option>
+        <option value="alias">ترتيب بحسب رقم الالياس</option>
       </select>
     </label>
     <label>اختر المستودع:
@@ -525,6 +526,7 @@ async function exportWithImages() {
       else if (sortValue === 'priceHigh') sortByPriceHighToLow();
       else if (sortValue === 'sales') sortBySales();
       else if (sortValue === 'stock') sortByStock();
+      else if (sortValue === 'alias') sortByAlias();
       else renderProducts();
     }
 
@@ -620,6 +622,37 @@ async function exportWithImages() {
       );
 
       filteredProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
+      renderPage(1);
+      updateTotalSales();
+    }
+
+    function sortByAlias() {
+      const outlet = warehouseFilter.value;
+      const category = categoryFilter.value;
+      const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+
+      if (!outlet) {
+        productContainer.innerHTML = "<h3 style='text-align:center;'>يرجى اختيار مستودع لعرض المنتجات</h3>";
+        pagination.innerHTML = '';
+        return;
+      }
+
+      filteredProducts = data.filter(d =>
+        d.stock > 20 &&
+        (!outlet || d.outlet === outlet) &&
+        (!category || d.category === category) &&
+        (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm))) &&
+        priceInSelectedRange(d.price || 0)
+      );
+
+      filteredProducts.sort((a, b) => {
+        if (!a.alias) return 1;
+        if (!b.alias) return -1;
+        // ترتيب كرقم إذا كان alias أرقام فقط، وإلا كـ string
+        const aNum = Number(a.alias), bNum = Number(b.alias);
+        if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+        return a.alias.localeCompare(b.alias, 'ar', {numeric: true});
+      });
       renderPage(1);
       updateTotalSales();
     }
