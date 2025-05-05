@@ -253,23 +253,26 @@
       const category = categoryFilter.value;
       const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
 
+      // إذا كان outlet فارغاً (تم اختيار 'الكل')، نعرض جميع المنتجات
       if (!outlet) {
-        productContainer.innerHTML = "<h3 style='text-align:center;'>يرجى اختيار مستودع لعرض المنتجات</h3>";
-        pagination.innerHTML = '';
-        return;
+        filteredProducts = data.filter(d =>
+          d.stock > 20 &&
+          (!category || d.category === category) &&
+          (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm))) &&
+          priceInSelectedRange(d.price || 0)
+        );
+      } else {
+        filteredProducts = data.filter(d =>
+          d.stock > 20 &&
+          d.outlet === outlet &&
+          (!category || d.category === category) &&
+          (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm))) &&
+          priceInSelectedRange(d.price || 0)
+        );
       }
 
-      filteredProducts = data.filter(d =>
-        d.stock > 20 &&
-        (!outlet || d.outlet === outlet) &&
-        (!category || d.category === category) &&
-        (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm))) &&
-        priceInSelectedRange(d.price || 0)
-      );
-
       renderPage(1);
-	  updateTotalSales();
-
+      updateTotalSales();
     }
 
     function renderPage(page) {
