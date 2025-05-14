@@ -397,9 +397,18 @@
 
 
 function updateTotalSales() {
-  const totalSalesQty = filteredProducts.reduce((sum, p) => sum + (p.sales || 0), 0);
-  const totalSalesValue = filteredProducts.reduce((sum, p) => sum + ((p.sales || 0) * (p.price || 0)), 0);
-  const count = filteredProducts.length;
+  const uniqueMap = new Map();
+
+  for (const p of filteredProducts) {
+    const alias = p.alias || `noalias-${p.code}`;
+    if (!uniqueMap.has(alias)) {
+      uniqueMap.set(alias, { qty: p.sales || 0, value: (p.sales || 0) * (p.price || 0) });
+    }
+  }
+
+  const totalSalesQty = Array.from(uniqueMap.values()).reduce((sum, p) => sum + p.qty, 0);
+  const totalSalesValue = Array.from(uniqueMap.values()).reduce((sum, p) => sum + p.value, 0);
+  const count = uniqueMap.size;
   const category = categoryFilter.value;
 
   const label = category
@@ -413,6 +422,8 @@ function updateTotalSales() {
     💰 قيمة المبيعات: ${totalSalesValue.toLocaleString()} ريال
   `;
 }
+
+
 
 
 async function exportWithImages() {
