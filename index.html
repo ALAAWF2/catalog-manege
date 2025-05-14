@@ -10,25 +10,54 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Cairo', Arial, sans-serif; background: linear-gradient(135deg, #fff8f0 60%, #ffe5c2 100%); padding: 20px; }
-    h1 { text-align: center; color: #e67e22; letter-spacing: 1px; font-family: 'Cairo', Arial, sans-serif; }
+    body { 
+      font-family: 'Cairo', Arial, sans-serif; 
+      background: linear-gradient(135deg, #fff8f0 60%, #ffe5c2 100%); 
+      padding: 20px; 
+      min-height: 100vh;
+      margin: 0;
+    }
+    h1 { 
+      text-align: center; 
+      color: #e67e22; 
+      letter-spacing: 1px; 
+      font-family: 'Cairo', Arial, sans-serif;
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(230, 126, 34, 0.1);
+    }
     select, button, input[type='number'], input[type='text'] {
-      margin: 5px; padding: 8px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc;
+      margin: 5px; 
+      padding: 12px;
+      font-size: 15px; 
+      border-radius: 8px; 
+      border: 2px solid #e8e8e8;
+      transition: all 0.3s ease;
+    }
+    select:hover, input[type='number']:hover, input[type='text']:hover {
+      border-color: #e67e22;
+    }
+    select:focus, input[type='number']:focus, input[type='text']:focus {
+      border-color: #e67e22;
+      box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.2);
+      outline: none;
     }
     .filters {
-      background: #fff7ed;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px #e67e2240;
-      padding: 18px 10px;
-      margin-bottom: 25px;
+      background: rgba(255, 247, 237, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(230, 126, 34, 0.15);
+      padding: 25px 20px;
+      margin-bottom: 35px;
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 15px;
       align-items: center;
       justify-content: center;
       position: sticky;
-      top: 0;
+      top: 20px;
       z-index: 10;
+      border: 1px solid rgba(230, 126, 34, 0.1);
     }
     .filters label, .filters select, .filters input {
       margin: 0 5px;
@@ -50,17 +79,25 @@
       background: #e67e22;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
+      padding: 12px 24px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: background 0.3s, box-shadow 0.2s;
+      transition: all 0.3s ease;
       margin: 5px;
-      font-size: 15px;
-      box-shadow: 0 2px 6px #e67e2220;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(230, 126, 34, 0.2);
+      position: relative;
+      overflow: hidden;
     }
     .filters button:hover {
       background: #d35400;
-      box-shadow: 0 4px 12px #e67e2240;
+      box-shadow: 0 6px 20px rgba(230, 126, 34, 0.3);
+      transform: translateY(-2px);
+    }
+    .filters button:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 10px rgba(230, 126, 34, 0.2);
     }
     .products {
       display: grid;
@@ -69,62 +106,88 @@
     }
     .product {
       background: white;
-      padding: 22px 15px 18px 15px;
-      border-radius: 14px;
-      border: 1px solid #f0c79b;
-      box-shadow: 0 2px 8px #e67e2215;
+      padding: 25px 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(240, 199, 155, 0.4);
+      box-shadow: 0 8px 30px rgba(230, 126, 34, 0.1);
       text-align: center;
-      transition: transform 0.18s, box-shadow 0.18s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
+      cursor: pointer;
     }
     .product:hover {
-      transform: translateY(-7px) scale(1.025);
-      box-shadow: 0 8px 24px #e67e2240;
+      transform: translateY(-8px);
+      box-shadow: 0 15px 35px rgba(230, 126, 34, 0.2);
       border-color: #e67e22;
+    }
+    .product:active {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(230, 126, 34, 0.15);
     }
     .product img {
       width: 100%;
-      height: 180px;
+      height: 200px;
       object-fit: contain;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      background-color: #fff0e0;
-      box-shadow: 0 1px 6px #e67e2210;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      background-color: #fff8f0;
+      box-shadow: 0 4px 15px rgba(230, 126, 34, 0.1);
+      transition: transform 0.3s ease;
+    }
+    .product:hover img {
+      transform: scale(1.05);
+    }
       transition: box-shadow 0.2s;
     }
     .product h4 {
       color: #e67e22;
-      margin: 10px 0 6px 0;
-      font-size: 20px;
+      margin: 15px 0 10px 0;
+      font-size: 22px;
       font-family: 'Cairo', Arial, sans-serif;
+      font-weight: 700;
+      transition: color 0.3s ease;
+    }
+    .product:hover h4 {
+      color: #d35400;
     }
     .product p {
-      margin: 5px 0;
-      color: #666;
-      font-size: 15px;
+      margin: 8px 0;
+      color: #555;
+      font-size: 16px;
+      line-height: 1.5;
     }
     .pagination {
       text-align: center;
       margin-top: 30px;
     }
     .pagination button, .pagination select {
-      margin: 5px;
-      padding: 10px 20px;
+      margin: 8px;
+      padding: 12px 24px;
       background: #e67e22;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: background 0.3s;
-      font-size: 15px;
+      transition: all 0.3s ease;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(230, 126, 34, 0.2);
     }
-    .pagination button:hover {
+    .pagination button:hover:not(:disabled) {
       background: #d35400;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(230, 126, 34, 0.3);
+    }
+    .pagination button:active:not(:disabled) {
+      transform: translateY(1px);
+      box-shadow: 0 2px 10px rgba(230, 126, 34, 0.2);
     }
     .pagination button:disabled {
-      background: #ccc;
+      background: #cccccc;
       cursor: not-allowed;
+      opacity: 0.7;
+      box-shadow: none;
     }
     .sort-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
     .sort-buttons button { background: #e67e22; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: background 0.3s; }
@@ -273,6 +336,9 @@
         );
       }
 
+      // ترتيب المنتجات حسب الأكثر مبيعاً بشكل افتراضي
+      filteredProducts.sort((a, b) => (b.sales || 0) - (a.sales || 0));
+
       renderPage(1);
       updateTotalSales();
     }
@@ -297,6 +363,7 @@
           <p>السعر: ${d.price} ريال</p>
           <p><strong>الكود:</strong> ${d.code}</p>
           <p><strong>Alias:</strong> ${d.alias ?? '—'}</p>
+          <p><strong>المستودع:</strong> ${d.outlet ?? '—'}</p>
           <p><strong>الكمية المباعة:</strong> ${d.sales !== undefined ? d.sales : '—'}</p>
 <p><strong>قيمة المبيعات:</strong> ${d.sales && d.price ? (d.sales * d.price).toLocaleString() + ' ريال' : '—'}</p>
 <p><strong>الكمية المتوفرة:</strong> ${d.stock ?? '—'}</p>
@@ -540,12 +607,6 @@ async function exportWithImages() {
       const category = categoryFilter.value;
       const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
 
-      if (!outlet) {
-        productContainer.innerHTML = "<h3 style='text-align:center;'>يرجى اختيار مستودع لعرض المنتجات</h3>";
-        pagination.innerHTML = '';
-        return;
-      }
-
       filteredProducts = data.filter(d =>
         d.stock > 20 &&
         (!outlet || d.outlet === outlet) &&
@@ -563,12 +624,6 @@ async function exportWithImages() {
       const outlet = warehouseFilter.value;
       const category = categoryFilter.value;
       const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-
-      if (!outlet) {
-        productContainer.innerHTML = "<h3 style='text-align:center;'>يرجى اختيار مستودع لعرض المنتجات</h3>";
-        pagination.innerHTML = '';
-        return;
-      }
 
       filteredProducts = data.filter(d =>
         d.stock > 20 &&
@@ -588,12 +643,6 @@ async function exportWithImages() {
       const category = categoryFilter.value;
       const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
 
-      if (!outlet) {
-        productContainer.innerHTML = "<h3 style='text-align:center;'>يرجى اختيار مستودع لعرض المنتجات</h3>";
-        pagination.innerHTML = '';
-        return;
-      }
-
       filteredProducts = data.filter(d =>
         d.stock > 20 &&
         (!outlet || d.outlet === outlet) &&
@@ -611,12 +660,6 @@ async function exportWithImages() {
       const outlet = warehouseFilter.value;
       const category = categoryFilter.value;
       const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-
-      if (!outlet) {
-        productContainer.innerHTML = "<h3 style='text-align:center;'>يرجى اختيار مستودع لعرض المنتجات</h3>";
-        pagination.innerHTML = '';
-        return;
-      }
 
       filteredProducts = data.filter(d =>
         d.stock > 20 &&
@@ -636,12 +679,6 @@ async function exportWithImages() {
       const category = categoryFilter.value;
       const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
 
-      if (!outlet) {
-        productContainer.innerHTML = "<h3 style='text-align:center;'>يرجى اختيار مستودع لعرض المنتجات</h3>";
-        pagination.innerHTML = '';
-        return;
-      }
-
       filteredProducts = data.filter(d =>
         d.stock > 20 &&
         (!outlet || d.outlet === outlet) &&
@@ -649,6 +686,22 @@ async function exportWithImages() {
         (!searchTerm || (d.alias && d.alias.toLowerCase().includes(searchTerm))) &&
         priceInSelectedRange(d.price || 0)
       );
+
+      filteredProducts.sort((a, b) => {
+        // التعامل مع القيم الفارغة
+        if (!a.alias && !b.alias) return 0;
+        if (!a.alias) return 1;
+        if (!b.alias) return -1;
+
+        // استخراج الأرقام من نص الالياس
+        const aNum = parseInt(a.alias.replace(/[^0-9]/g, '')) || 0;
+        const bNum = parseInt(b.alias.replace(/[^0-9]/g, '')) || 0;
+
+        return aNum - bNum;
+      });
+      
+      renderPage(1);
+      updateTotalSales();
 
       filteredProducts.sort((a, b) => {
         if (!a.alias) return 1;
